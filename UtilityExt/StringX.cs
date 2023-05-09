@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.Text;
+using System;
 
 namespace UtilityExt
 {
@@ -16,7 +17,7 @@ namespace UtilityExt
         /// <returns>A string.</returns>
         public static string RemoveSpecialCharacters(this string? value, string replaceSpaceWith = "")
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             if (string.IsNullOrEmpty(value)) return "";
             foreach (char c in value)
             {
@@ -46,13 +47,13 @@ namespace UtilityExt
             if (string.IsNullOrEmpty(value)) return "";
             if (value.Length < limit) return value;
 
-            var limited = value.Substring(0, limit);
+            var limited = value[..limit];
             if (useLastSpace)
             {
                 var lastSpaceIndex = limited.LastIndexOf(' ');
                 if (lastSpaceIndex > 0)
                 {
-                    limited = limited.Substring(0, lastSpaceIndex);
+                    limited = limited[..lastSpaceIndex];
                 }
             }
 
@@ -114,7 +115,7 @@ namespace UtilityExt
         /// <param name="splitAt">The split at.</param>
         /// <param name="delimiter">The delimiter.</param>
         /// <returns>A string.</returns>
-        public static string DelimitString(this string inputString, int[] splitAt, string delimiter = "-")
+        public static string? DelimitString(this string inputString, int[] splitAt, string delimiter = "-")
         {
             if (string.IsNullOrWhiteSpace(inputString))
             {
@@ -135,7 +136,7 @@ namespace UtilityExt
             int startPosition = 0;
             foreach (var delimitPoint in splitAt)
             {
-                outputString += inputString.Substring(startPosition, delimitPoint) + delimiter;
+                outputString += string.Concat(inputString.AsSpan(startPosition, delimitPoint), delimiter);
                 startPosition += delimitPoint;
             }
 
@@ -157,7 +158,7 @@ namespace UtilityExt
                 return null;
             }
 
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             bool lastWasSpace = false;
             foreach (var ch in value.Trim())
             {
@@ -195,7 +196,7 @@ namespace UtilityExt
 
             if (trim)
             {
-                return value.PadLeft(length).Substring(0, length);
+                return value.PadLeft(length)[..length];
             }
 
             return value.PadLeft(length);
@@ -238,7 +239,7 @@ namespace UtilityExt
 
             if (trim)
             {
-                return value.PadRight(length).Substring(0, length);
+                return value.PadRight(length)[..length];
             }
 
             return value.PadRight(length);
@@ -262,7 +263,7 @@ namespace UtilityExt
                 return value.PadLeft(length - value.Length);
             }
             
-            return value.Substring(value.Length - length);
+            return value[^length..];
         }
 
         /// <summary>
@@ -270,12 +271,16 @@ namespace UtilityExt
         /// </summary>
         /// <param name="inputString">The input string.</param>
         /// <returns>A string.</returns>
-        public static string ToSafeAScii(this string inputString)
+        public static string? ToSafeAScii(this string inputString)
         {
-            var ascii = inputString.TrimAll()
+            if (inputString == null)
+            {
+                return inputString;
+            }
+
+            var ascii = inputString?.TrimAll()?
                                    .Where(ch => ch < 128 && !char.IsControl(ch))
                                    .ToArray();
-
             return new string(ascii);
         }
 
@@ -303,7 +308,7 @@ namespace UtilityExt
         /// <param name="value">The value.</param>
         /// <param name="replaceWith">The replace with string.</param>
         /// <returns>A string.</returns>
-        public static string RemoveLineBreaks(this string value, string replaceWith = " ")
+        public static string? RemoveLineBreaks(this string value, string replaceWith = " ")
         {
             if (value == null)
             {
